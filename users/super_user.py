@@ -17,7 +17,6 @@ class SuperUser(User):
 		c = conn.cursor()
 
 		c.execute("INSERT INTO acc_req VALUES (?, ?, ?, ?)", (self.username, self.pubUserID, accID, signature))
-		#c.execute(self.payload, self.insert_args)
 
 		conn.commit()
 		conn.close()

@@ -6,7 +6,7 @@ c = conn.cursor()
 c.execute("""CREATE TABLE acc_req (
 		username blob,
 		userID blob,
-		accID blob,
+		targetID blob,
 		signature blob
 		)""")
 
