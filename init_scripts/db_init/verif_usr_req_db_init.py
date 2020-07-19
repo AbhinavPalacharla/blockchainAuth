@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('verify_req.db')
+conn = sqlite3.connect('verify_usr_req.db')
 c = conn.cursor()
 
 c.execute("""CREATE TABLE init_verif_req (
