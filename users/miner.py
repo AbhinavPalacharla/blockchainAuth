@@ -5,6 +5,7 @@ import ed25519
 import json
 from requests.verify_identify_request import VerifyIdentityRequest
 import pickle
+import time
 
 
 class Miner():
@@ -47,11 +48,20 @@ class Miner():
 		return sig
 
 	def verify(self, sig, msg, pubkey):
+
+		print(f"message: {json.loads(msg)}")
+		print(f"signature: {sig}")
+		print(f"pubkey: {pubkey}")
+		print(pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex'))
+
 		try:
-			pubkey.verify(sig, json.dumps(msg).encode('utf-8'), encoding='hex')
-			return json.loads(msg.decode('utf-8'))
+			pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex')
+			print("verified")
+			return json.loads(msg)
 		except:
 			print("Error: integrity could not be verified, data may have been tampered with..")
+			e = sys.exc_info()[0]
+			print(e)
 			return False
 
 	def handle_verification(self):
@@ -68,11 +78,47 @@ class Miner():
 				"unique_num": (uuid.uuid1()).hex
 			}
 
+			print(data)
+
+			c.execute("""INSERT INTO answers VALUES (?, ?)""", (i[2], data.get("unique_num")))
+			conn.commit()
+
 			sig = self.gen_signature(data)
 
 			c.execute("""INSERT INTO verif_ident VALUES (?, ?, ?, ?, ?, ?)""", (self.username, self.userID, i[2], self.pubkeyObj, json.dumps(data), sig))
 			conn.commit()
+
+		print('waiting..')
+		time.sleep(10)
+		print('done waiting')
+
+		c.execute("""SELECT * FROM resp""")
+		resp = c.fetchall()
+		print(resp)
+
+		for i in resp:
+			c.execute("""SELECT * FROM answers WHERE userID=?""", (i[1],))
+			answer = c.fetchall()
+			print(f"answer: {answer}")
+
+			ur = self.verify(i[5], i[4], pickle.loads(i[3]))
+			print("ur: ")
+			print(ur)
+			print("unique num: ")
+			print(ur.get("uniqe_num"))
+			if ur.get("uniqe_num") == answer[0][1]:
+				print(f"{i[1]} got the right answer")
+				c.execute("""INSERT INTO result VALUES (?, ?, ?, ?)""", (self.username, self.userID, i[1], 'verified'))
+				conn.commit()
+			elif ur.get("uniqe_num") != answer[0][1]:
+				print(f"{i[1]} did not get the right answer")
+				c.execute("""INSERT INTO result VALUES (?, ?, ?, ?)""", (self.username, self.userID, i[1], 'unverified'))
+				conn.commit()
+			else:
+				print("something went wrong...")
+
 		print('done')
+
 if __name__ == '__main__':
 	m = Miner('miner1')
 	m.userID = 4444

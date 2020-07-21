@@ -45,9 +45,7 @@ c.execute("""CREATE TABLE result (
 conn.commit()
 
 c.execute("""CREATE TABLE answers (
-		username blob,
 		userID blob,
-		pubkey blob,
 		unique_num blob
 		)""")
 

@@ -91,8 +91,8 @@ class User():
 
 
 if __name__ == '__main__':
-	pass
-	'''
+	#pass
+
 	u = User('abhi', 'abhipasswd')
 	data = {
 		"message": "accept",
@@ -107,7 +107,3 @@ if __name__ == '__main__':
 		print("good")
 	except:
 		print("not good")
-	'''
-
-	u = User('abhi', 'abhipasswd')
-	print(u.password)

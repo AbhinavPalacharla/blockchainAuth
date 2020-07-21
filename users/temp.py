@@ -41,14 +41,22 @@ class TempUser():
 
 	def verify(self, sig, msg, pubkey):
 
-		print(json.loads(msg))
+		print(f"message: {json.loads(msg)}")
+		print(f"signature: {sig}")
+		print(f"pubkey: {pubkey}")
+
+		print(pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex'))
 
 		try:
 			pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex')
-			return json.loads(msg.decode('utf-8'))
+			print("verified")
+			return json.loads(msg)
 		except:
 			print("Error: integrity could not be verified, data may have been tampered with..")
-			return False
+			e = sys.exc_info()[0]
+			print(e)
+			sys.exit(1)
+			#return False
 
 	def encrypt(self, passwd):
 		encoded = passwd.encode()
@@ -92,23 +100,41 @@ class TempUser():
 			print(resp)
 			time.sleep(2)
 
-		dr = self.verify(resp[0][5], resp[0][4], resp[0][3])
-		print(dr)
-		resp = []
+		conn.close()
 
-		time.sleep(6000)
+		dr = self.verify(resp[0][5], resp[0][4], pickle.loads(resp[0][3]))
 
 		data = {
-			"uniqe_num": dr.get(unique_num)
+			"uniqe_num": dr.get("unique_num")
 		}
 
 		sig = self.gen_signature(data)
 
-		c.execute("""INSERT INTO resp  VALUES (?, ?, ?, ?, ?)""", (self.username, self.userID, resp[0][1], self.pubkey, json.dumps(data).encode('utf-8'), self.sig))
+		conn = sqlite3.connect('verify_user_req.db')
+		c = conn.cursor()
 
-		while (resp == None) or (c.rowcount() == 0):
-			c.execute("""SELECT * FROM verif_ident WHERE targetID=?""", (self.userID,))
+		c.execute("""INSERT INTO resp  VALUES (?, ?, ?, ?, ?, ?)""", (self.username, self.userID, resp[0][1], self.pubkeyObj, json.dumps(data).encode('utf-8'), sig))
+		conn.commit()
+		c.execute("""SELECT * FROM resp""")
+		x = c.fetchall()
+		print(x)
+		print("inserted into response")
+
+		conn.close()
+
+		resp = []
+		#time.sleep(60000)
+
+		conn = sqlite3.connect('verify_user_req.db')
+		c = conn.cursor()
+
+		while (resp == []):
+			c.execute("""SELECT * FROM result WHERE targetID=?""", (self.userID,))
 			resp = c.fetchall()
+			print(resp)
+			time.sleep(2)
+
+		conn.close()
 
 		if resp[0][3] == 'verified':
 			print('account verified successfully')
@@ -116,7 +142,7 @@ class TempUser():
 			print('account could not be verified: exiting..')
 			sys.exit(1)
 
-		conn.close()
+		#conn.close()
 
 
 if __name__ == '__main__':
