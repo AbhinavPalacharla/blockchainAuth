@@ -1,5 +1,5 @@
 import sqlite3
-from request import Request
+from .request import Request
 
 class PokeRequest(Request):
 
@@ -15,3 +15,8 @@ class PokeRequest(Request):
 
 		conn.commit()
 		conn.close()
+
+if __name__ == '__main__':
+	p = PokeRequest('abhi', 'passwd', 0000, 'testing')
+	p.post_req()
+	print('done')

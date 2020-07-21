@@ -1,5 +1,5 @@
 import sqlite3
-from request import Request
+from .request import Request
 
 class AcceptRequest(Request):
 

@@ -1,5 +1,5 @@
 import sqlite3
-from request import Request
+from .request import Request
 
 class JoinRequest(Request):
 	def __init__(self, uname, uid, pubkey, request_rank, endorser1, endorser2, endorser3):

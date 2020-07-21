@@ -1,9 +1,9 @@
-from request import Request
+from .request import Request
 
 class VerifyIdentityRequest(Request):
 
 	def __init__(self, uname, uid, pubkey, signature):
-		super().__init__(uname, uid, pubkey):
+		super().__init__(uname, uid, pubkey)
 
 	def post_req(self):
 		conn = sqlite3.connect('verify_usr_req.db')
