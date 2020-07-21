@@ -4,6 +4,7 @@ import uuid
 import ed25519
 import json
 from requests.verify_identify_request import VerifyIdentityRequest
+import pickle
 
 
 class Miner():
@@ -33,8 +34,8 @@ class Miner():
 
 	def gen_keys(self):
 		self.privkey, self.pubkey = ed25519.create_keypair()
-		#print(f"priv: {self.privkey.to_ascii(encoding='hex')}")
-		#print(f"pub: {self.pubkey.to_ascii(encoding='hex')}")
+		self.pubkeyObj = pickle.dumps(self.pubkey)
+		self.privkeyObj = pickle.dumps(self.privkey)
 
 	def gen_uniq_id(self):
 		return (uuid.uuid1()).hex
@@ -69,7 +70,7 @@ class Miner():
 
 			sig = self.gen_signature(data)
 
-			c.execute("""INSERT INTO verif_ident VALUES (?, ?, ?, ?, ?, ?)""", (self.username, self.userID, i[2], self.pubkey.to_ascii(encoding='hex'), json.dumps(data).encode('utf-8'), sig))
+			c.execute("""INSERT INTO verif_ident VALUES (?, ?, ?, ?, ?, ?)""", (self.username, self.userID, i[2], self.pubkeyObj, json.dumps(data), sig))
 			conn.commit()
 		print('done')
 if __name__ == '__main__':
