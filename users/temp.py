@@ -7,6 +7,7 @@ import sys
 from cryptography.fernet import Fernet
 import sqlite3
 import time
+import pickle
 
 class TempUser():
 #class for temporary user
@@ -17,6 +18,8 @@ class TempUser():
 		self.userID = self.gen_uniq_id()
 		self.pubkey = None
 		self.privkey = None
+		self.pubkeyObj = None
+		self.privkeyObj = None
 		self.arguments = kwargs
 		#self.request_role = request_role
 		#self.end1ID = endorser1
@@ -27,8 +30,8 @@ class TempUser():
 
 	def gen_keys(self):
 		self.privkey, self.pubkey = ed25519.create_keypair()
-		#print(f"priv: {self.privkey.to_ascii(encoding='hex')}")
-		#print(f"pub: {self.pubkey.to_ascii(encoding='hex')}")
+		self.pubkeyObj = pickle.dumps(self.pubkey)
+		self.privkeyObj = pickle.dumps(self.privkey)
 
 	def gen_signature(self, data):
 		msg = json.dumps(data).encode('utf-8')
@@ -37,21 +40,21 @@ class TempUser():
 		return sig
 
 	def verify(self, sig, msg, pubkey):
+
+		print(json.loads(msg))
+
 		try:
-			pubkey.verify(sig, json.dumps(msg).encode('utf-8'), encoding='hex')
+			pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex')
 			return json.loads(msg.decode('utf-8'))
 		except:
 			print("Error: integrity could not be verified, data may have been tampered with..")
 			return False
 
 	def encrypt(self, passwd):
-		#pass #implement later, need to use external lib for encryption
 		encoded = passwd.encode()
-		#f = Fernet(key)
 		f = open('key.key', 'rb')
 		key = f.read()
 		f.close()
-
 		fern = Fernet(key)
 		encrypted = fern.encrypt(encoded)
 
@@ -78,30 +81,25 @@ class TempUser():
 		c = conn.cursor()
 
 		#p = PokeRequest(self.username, self.password, self.userID, self.pubkey.to_ascii(encoding='hex'))
-		p = PokeRequest(self.username, self.password, self.userID, self.pubkey.encode('utf-8'))
+		p = PokeRequest(self.username, self.password, self.userID, self.pubkeyObj)
 		p.post_req()
 
 		resp = []
-		rows = 0
 
 		while (len(resp) == 0):
 			c.execute("""SELECT * FROM verif_ident WHERE targetID=?""", (self.userID,))
 			resp = c.fetchall()
-			#print(resp)
+			print(resp)
 			time.sleep(2)
-
-		#print(resp)
-		#print(resp[0])
-		#print(type(resp[0][0]))
 
 		dr = self.verify(resp[0][5], resp[0][4], resp[0][3])
 		print(dr)
-		resp = None
+		resp = []
 
 		time.sleep(6000)
 
 		data = {
-			"uniqe_num": dr.unique_num
+			"uniqe_num": dr.get(unique_num)
 		}
 
 		sig = self.gen_signature(data)
