@@ -5,7 +5,6 @@ import ed25519
 import json
 from requests.verify_identify_request import VerifyIdentityRequest
 import pickle
-<<<<<<< HEAD
 import time
 
 
@@ -97,7 +96,11 @@ class Miner():
 		resp = c.fetchall()
 		print(resp)
 
+		conn.close()
+
 		for i in resp:
+			conn = sqlite3.connect('verify_user_req.db')
+			c = conn.cursor()
 			c.execute("""SELECT * FROM answers WHERE userID=?""", (i[1],))
 			answer = c.fetchall()
 			print(f"answer: {answer}")
@@ -111,10 +114,17 @@ class Miner():
 				print(f"{i[1]} got the right answer")
 				c.execute("""INSERT INTO result VALUES (?, ?, ?, ?)""", (self.username, self.userID, i[1], 'verified'))
 				conn.commit()
+				conn.close()
+				conn = sqlite3.connect('verified_users.db')
+				c = conn.cursor()
+				c.execute("""INSERT INTO users VALUES (?, ?, ?)""", (i[0], i[1], i[3]))
+				conn.commit()
+				conn.close()
 			elif ur.get("uniqe_num") != answer[0][1]:
 				print(f"{i[1]} did not get the right answer")
 				c.execute("""INSERT INTO result VALUES (?, ?, ?, ?)""", (self.username, self.userID, i[1], 'unverified'))
 				conn.commit()
+				conn.close()
 			else:
 				print("something went wrong...")
 
