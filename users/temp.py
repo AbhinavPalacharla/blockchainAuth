@@ -100,7 +100,9 @@ class TempUser():
 			print(resp)
 			time.sleep(2)
 
-		conn.close()
+		dr = self.verify(resp[0][5], resp[0][4], resp[0][3])
+		print(dr)
+		resp = []
 
 		dr = self.verify(resp[0][5], resp[0][4], pickle.loads(resp[0][3]))
 
