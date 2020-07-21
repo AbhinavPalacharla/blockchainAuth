@@ -7,8 +7,6 @@ from requests.verify_identify_request import VerifyIdentityRequest
 import pickle
 <<<<<<< HEAD
 import time
-=======
->>>>>>> b0133c8f7eb2655d747924cd3763a704e192b89c
 
 
 class Miner():
