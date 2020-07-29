@@ -1,8 +1,9 @@
 import uuid
 import ed25519
 import json
-from requests.poke_request import PokeRequest
-from requests.verify_response_request import VerifyReponseRequest
+from request_types.poke_request import PokeRequest
+from request_types.verify_response_request import VerifyReponseRequest
+from request_types.join_request import JoinRequest
 import sys
 from cryptography.fernet import Fernet
 import sqlite3
@@ -21,7 +22,7 @@ class TempUser():
 		self.pubkeyObj = None
 		self.privkeyObj = None
 		self.arguments = kwargs
-		#self.request_role = request_role
+		#self.request_rank = request_rank
 		#self.end1ID = endorser1
 		#self.end2ID = endorser2
 		#self.end3ID = endorser3
@@ -74,12 +75,12 @@ class TempUser():
 	def request_join(self):
 		jr = JoinRequest(
 			self.username,
-			self.pubUserID,
-			self.request_role,
-			self.pubkey.to_ascii(encoding='hex'),
-			endorser1 = self.arguments.endorser1,
-			endorser2 = self.arguments.endorser2,
-			endorser3 = self.arguments.endorser3
+			self.userID,
+			self.pubkeyObj,
+			request_rank = self.arguments.get("request_rank"),
+			endorser1 = self.arguments.get("endorser1"),
+			endorser2 = self.arguments.get("endorser2"),
+			endorser3 = self.arguments.get("endorser3")
 			)
 
 		jr.post_req()
@@ -113,10 +114,10 @@ class TempUser():
 
 		c.execute("""INSERT INTO resp  VALUES (?, ?, ?, ?, ?, ?)""", (self.username, self.userID, resp[0][1], self.pubkeyObj, json.dumps(data).encode('utf-8'), sig))
 		conn.commit()
-		c.execute("""SELECT * FROM resp""")
-		x = c.fetchall()
-		print(x)
-		print("inserted into response")
+		#c.execute("""SELECT * FROM resp""")
+		#x = c.fetchall()
+		#print(x)
+		#print("inserted into response")
 
 		conn.close()
 
@@ -146,4 +147,6 @@ class TempUser():
 if __name__ == '__main__':
 	t = TempUser('abhi', 'passwd', request_rank=0, endorser1=1111, endorser2=2222, endorser3=3333)
 	t.userID = 6666
-	t.request_verification()
+	print(t.arguments)
+	#t.request_verification()
+	t.request_join()

@@ -15,6 +15,7 @@ class JoinRequest(Request):
 		c = conn.cursor()
 
 		c.execute("INSERT INTO join_req VALUES (?, ?, ?, ?, ?, ?, ?)", (self.username, self.userID, self.pubkey, self.request_rank, self.end1ID, self.end2ID, self.end3ID))
-
+		print('loaded')
 		conn.commit()
 		conn.close()
+		print('done')

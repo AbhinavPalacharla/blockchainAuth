@@ -8,6 +8,7 @@ c.execute("""CREATE TABLE acc_req (
 		userID blob,
 		targetID blob,
 		pubkey blob,
+		msg blob,
 		signature blob
 		)""")
 

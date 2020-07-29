@@ -1,11 +1,12 @@
 import uuid
 import ed25519
 import json
-from requests.poke_request import PokeRequest
-from requests.verify_response_request import VerifyReponseRequest
+from request_types.poke_request import PokeRequest
+from request_types.verify_response_request import VerifyReponseRequest
 import sys
 from cryptography.fernet import Fernet
 import sqlite3
+import pickle
 
 class User():
 
@@ -17,7 +18,7 @@ class User():
 		self.privkey = None
 
 		self.gen_keys()
-
+	'''
 	def encrypt(self, passwd):
 		#pass #implement later, need to use external lib for encryption
 		encoded = passwd.encode()
@@ -44,6 +45,50 @@ class User():
 		sig = self.privkey.sign(msg, encoding='hex')
 		print(sig)
 		return sig
+	'''
+
+	def gen_keys(self):
+		self.privkey, self.pubkey = ed25519.create_keypair()
+		self.pubkeyObj = pickle.dumps(self.pubkey)
+		self.privkeyObj = pickle.dumps(self.privkey)
+
+	def gen_signature(self, data):
+		msg = json.dumps(data).encode('utf-8')
+		sig = self.privkey.sign(msg, encoding='hex')
+		print(sig)
+		return sig
+
+	def verify(self, sig, msg, pubkey):
+
+		print(f"message: {json.loads(msg)}")
+		print(f"signature: {sig}")
+		print(f"pubkey: {pubkey}")
+
+		print(pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex'))
+
+		try:
+			pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex')
+			print("verified")
+			return json.loads(msg)
+		except:
+			print("Error: integrity could not be verified, data may have been tampered with..")
+			e = sys.exc_info()[0]
+			print(e)
+			sys.exit(1)
+			#return False
+
+	def encrypt(self, passwd):
+		encoded = passwd.encode()
+		f = open('key.key', 'rb')
+		key = f.read()
+		f.close()
+		fern = Fernet(key)
+		encrypted = fern.encrypt(encoded)
+
+		return encrypted
+
+	def gen_uniq_id(self):
+		return (uuid.uuid1()).hex
 
 	def verify(self, sig, msg, pubkey):
 		try:

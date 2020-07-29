@@ -6,7 +6,7 @@ class Request():
 		self.username = uname
 		self.userID = uid
 		self.pubkey = pubkey
-		self.isVerified = self.checkVerification()
+		#self.isVerified = self.checkVerification()
 
 	def checkVerification(self):
 		conn = sqlite3.connect('verified_users.db')
@@ -16,8 +16,10 @@ class Request():
 		resp = c.fetchall()
 
 		if len(resp) != 0:
+			print('verified that you are verified')
 			return True
 		elif len(resp) == 0:
+			print('you are not verified, please request verification first')
 			return False
 		else:
 			print("something went wrong..")

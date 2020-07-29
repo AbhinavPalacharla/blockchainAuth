@@ -3,10 +3,9 @@ import sys
 import uuid
 import ed25519
 import json
-from requests.verify_identify_request import VerifyIdentityRequest
+from request_types.verify_identify_request import VerifyIdentityRequest
 import pickle
 import time
-
 
 class Miner():
 
@@ -17,7 +16,6 @@ class Miner():
 		self.privkey = None
 
 		self.gen_keys()
-
 
 	def encrypt(self, passwd):
 		#pass #implement later, need to use external lib for encryption
@@ -31,7 +29,6 @@ class Miner():
 		encrypted = fern.encrypt(encoded)
 
 		return encrypted
-
 
 	def gen_keys(self):
 		self.privkey, self.pubkey = ed25519.create_keypair()
@@ -48,12 +45,10 @@ class Miner():
 		return sig
 
 	def verify(self, sig, msg, pubkey):
-
-		print(f"message: {json.loads(msg)}")
-		print(f"signature: {sig}")
-		print(f"pubkey: {pubkey}")
-		print(pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex'))
-
+		#print(f"message: {json.loads(msg)}")
+		#print(f"signature: {sig}")
+		#print(f"pubkey: {pubkey}")
+		#print(pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex'))
 		try:
 			pubkey.verify(sig, json.dumps(json.loads(msg)).encode('utf-8'), encoding='hex')
 			print("verified")

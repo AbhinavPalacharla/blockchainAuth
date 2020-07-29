@@ -3,7 +3,7 @@ from .request import Request
 
 class AcceptRequest(Request):
 
-	def __init__(self, uname, uid, pubkey, target_id, signature):
+	def __init__(self, uname, uid, pubkey, target_id, msg, signature):
 		super().__init__(uname, uid, pubkey)
 
 		self.targetID = target_id
@@ -13,4 +13,4 @@ class AcceptRequest(Request):
 		conn = sqlite3.connect(requests.db)
 		c = conn.cursor()
 
-		c.execute("""INSERT INTO acc_req VALUES (?, ?, ?, ?, ?)""", (self.username, self.userID, targetID, self.pubkey, self.signature))
+		c.execute("""INSERT INTO acc_req VALUES (?, ?, ?, ?, ?)""", (self.username, self.userID, targetID, self.pubkey, self.msg, self.signature))

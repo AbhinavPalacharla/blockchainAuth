@@ -1,6 +1,6 @@
 from user import User
 import ed25519 as e
-import json as j
+import json
 import sqlite3
 
 class SuperUser(User):
@@ -9,25 +9,25 @@ class SuperUser(User):
 		super().__init__(uname, passwd)
 		self.rank = 4
 
-	def accept_join_request(self, accID):
-		msg = b'accept'
-		signature = self.privkey.sign(msg, encoding='hex')
+	def accept_join_request(self, targetID):
+		msg = {
+			'response': True
+		}
 
+		sig = self.gen_signature(msg)
 		conn = sqlite3.connect('requests.db')
 		c = conn.cursor()
-
-		c.execute("INSERT INTO acc_req VALUES (?, ?, ?, ?)", (self.username, self.pubUserID, accID, signature))
-
+		c.execute("""INSERT INTO acc_req VALUES (?, ?, ?, ?, ?, ?)""", (self.username, self.userID, targetID, self.pubkeyObj, json.dumps(msg).encode('utf-8'), sig))
 		conn.commit()
 		conn.close()
 
 if __name__=='__main__':
 	suA = SuperUser('abhi_admin', 'admin_passwd')
-	suA.pubUserID = 1111
-	print(suA.pubUserID)
-	suA.accept_join_request(4444)
+	suA.userID = 1111
+	print(suA.userID)
+	suA.accept_join_request(6666)
 
 	suB = SuperUser('abhi_admin1', 'admin_passwd')
-	suB.pubUserID = 2222
-	print(suB.pubUserID)
-	suB.accept_join_request(4444)
+	suB.userID = 2222
+	print(suB.userID)
+	suB.accept_join_request(6666)
